@@ -6,6 +6,10 @@ __pycache__/
 # C extensions
 *.so
 
+# Data, too-large files
+data/*
+!data/sample_submission.csv
+
 # Distribution / packaging
 .Python
 build/
