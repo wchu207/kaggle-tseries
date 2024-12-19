@@ -14,7 +14,7 @@ class SMWrapper(RegressorMixin, BaseEstimator):
         # Each row represents a date
         # Should use STL decomposition to reduce to stationarity
         #   Save trend and seasonality to add back in prediction
-        self.sarimax = VARMAX(X,
+        self.varmax = VARMAX(X,
                                exog=exog,
                                order=self.order,
                                trend=self.trend
