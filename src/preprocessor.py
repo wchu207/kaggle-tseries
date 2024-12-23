@@ -1,3 +1,4 @@
+import numpy as np
 import pandas as pd
 from tqdm import tqdm
 from statsmodels.tsa.seasonal import MSTL
@@ -15,10 +16,13 @@ class Preprocessor:
         values = [value for value in values if value in df.columns]
         return pd.pivot(df, index='date', columns=['store_nbr', 'family'], values=values)
     
-    def impute(self, df):
+    def impute(self, series):
         # Accepts dataframe indexed by dates, with daily data
         # Inserts rows for missing days and imputes by copying previous day's values
-        pass
+        dates = pd.date_range(series.index.min(), series.index.max())
+        out_series = series.reindex(dates, fill_value=np.nan)
+        out_series = out_series.ffill()
+        return out_series
 
     def reduce_to_stationarity(self, df):
         # Accepts dataframe with multi-index (store_nbr, family)
@@ -39,6 +43,8 @@ class Preprocessor:
             output_df[(*column, "trend")] = results.trend
             output_df[(*column, "seasonal_7")] = results.seasonal["seasonal_7"]
             output_df[(*column, "seasonal_365")] = results.seasonal["seasonal_365"]
+        
+        self.stl_df = output_df
         return output_df
         
     def reduce_column(self, series):
