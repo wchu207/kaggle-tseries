@@ -1,7 +1,7 @@
 from sklearn.base import BaseEstimator, RegressorMixin
 from statsmodels.tsa.statespace.varmax import VARMAX
 
-class SMWrapper(RegressorMixin, BaseEstimator):
+class VARMAXWrapper(RegressorMixin, BaseEstimator):
     def __init__(self, order=(1, 0), trend='c'):
         self.order = order
         self.trend = trend
@@ -20,5 +20,5 @@ class SMWrapper(RegressorMixin, BaseEstimator):
                                trend=self.trend
                               )
 
-    def predict(self, X):
+    def forecast(self, n):
         pass
