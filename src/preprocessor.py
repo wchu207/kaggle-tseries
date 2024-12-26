@@ -24,38 +24,3 @@ class Preprocessor:
         out_series = series.reindex(dates, fill_value=np.nan)
         out_series = out_series.ffill()
         return out_series
-
-    def reduce_to_stationarity(self, df):
-        # Accepts dataframe with multi-index (store_nbr, family)
-        #   Returns new dataframe with residuals, trend, seasons
-        #   i.e. columns are multi-indexed (store_nbr, family, output)
-        #   "onpromotion" left untouched, this is a new dataframe
-        nobs = df.shape[0]
-        store_nbrs = df.columns.levels[0]
-        product_fams = df.columns.levels[1]
-        outputs = ["resid", "trend", "seasonal_7", "seasonal_365"]
-        
-        output_index = pd.MultiIndex.from_product([store_nbrs, product_fams, outputs])
-        output_df = pd.DataFrame(index=df.index, columns=output_index)
-
-        results = None
-        with ProcessPoolExecutor(8) as f:
-            results = f.map(
-                self.reduce_column,
-                [df[column] for column in df.columns]
-            )
-        for i, result in enumerate(results):
-            output_df[(*df.columns[i], "resid")] = result.resid
-            output_df[(*df.columns[i], "trend")] = result.trend
-            output_df[(*df.columns[i], "seasonal_7")] = result.seasonal["seasonal_7"]
-            output_df[(*df.columns[i], "seasonal_365")] = result.seasonal["seasonal_365"]
-
-        return output_df
-        
-    def reduce_column(self, series):
-        results = MSTL(series, periods=[7, 365]).fit()
-        return results
-
-    def restore_season_and_trend(self, resids, stl_df):
-        pass
-    
