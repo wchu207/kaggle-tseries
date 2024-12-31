@@ -1,14 +1,18 @@
 import numpy as np
 import pandas as pd
+import statsmodels.api as sm
 from tqdm import tqdm
 from statsmodels.tsa.seasonal import MSTL
 from statsmodels.tsa.stattools import adfuller
 from concurrent.futures import ProcessPoolExecutor
+from statsmodels.regression.linear_model import OLS
 
 class MultiSTL:
     def __init__(self):
         self.seasonal_7 = None
         self.seasonal_365 = None
+        self.trend = None
+        self.resid = None
 
     def reduce_to_stationarity(self, df):
         # Accepts dataframe with multi-index (store_nbr, family)
@@ -41,17 +45,31 @@ class MultiSTL:
         stl_df = self.reduce_to_stationarity(df)
         self.seasonal_7 = self.fit_all_seasonal_7(stl_df['seasonal_7'])
         self.seasonal_365 = self.fit_all_seasonal_365(stl_df['seasonal_365'])
+        self.trend = self.fit_trend(stl_df['trend'])
+        self.resid = stl_df['resid']
+
+    def get_residuals(self):
+        return self.resid
         
     def reduce_column(self, series):
         results = MSTL(series, periods=[7, 365]).fit()
         return results
 
     def fit_trend(self, trend):
-        pass
+        return trend.apply(
+            lambda col: OLS(
+                col.values,
+                sm.add_constant(col.index.values.astype(float)),
+                hasconst=True).fit()
+        )
+
+        
 
     def fit_seasonal_7(self, seasonal_7):
         return seasonal_7.tail(21).to_numpy().reshape(3, 7).mean(axis=0)
-        
+
+    # Returns map of (store_nbr, family) : array of size 7
+    #   Array: offset for each day of the week, starting with 
     def fit_all_seasonal_7(self, seasonal_7_df):
         results = None
         with ProcessPoolExecutor(8) as f:

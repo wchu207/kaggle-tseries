@@ -5,6 +5,8 @@ class VARMAXWrapper(RegressorMixin, BaseEstimator):
     def __init__(self, order=(1, 0), trend='c'):
         self.order = order
         self.trend = trend
+        self.varmax = None
+        self.varmax_results = None
 
     def set_params(self):
         pass
@@ -19,6 +21,7 @@ class VARMAXWrapper(RegressorMixin, BaseEstimator):
                                order=self.order,
                                trend=self.trend
                               )
+        self.varmax_results = self.varmax.fit()
 
     def forecast(self, n):
         pass
