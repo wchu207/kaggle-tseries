@@ -20,11 +20,10 @@ class MultiSTL:
         #   i.e. columns are multi-indexed (store_nbr, family, output)
         #   "onpromotion" left untouched, this is a new dataframe
         nobs = df.shape[0]
-        store_nbrs = df.columns.levels[0]
-        product_fams = df.columns.levels[1]
+        product_fams = df.columns
         outputs = ["resid", "trend", "seasonal_7", "seasonal_365"]
         
-        output_index = pd.MultiIndex.from_product([outputs, store_nbrs, product_fams])
+        output_index = pd.MultiIndex.from_product([outputs, product_fams])
         output_df = pd.DataFrame(index=df.index, columns=output_index)
 
         results = None
@@ -34,10 +33,10 @@ class MultiSTL:
                 [df[column] for column in df.columns]
             )
         for i, result in enumerate(results):
-            output_df[("resid", *df.columns[i])] = result.resid
-            output_df[("trend", *df.columns[i])] = result.trend
-            output_df[("seasonal_7", *df.columns[i])] = result.seasonal["seasonal_7"]
-            output_df[("seasonal_365", *df.columns[i])] = result.seasonal["seasonal_365"]
+            output_df[("resid", df.columns[i])] = result.resid
+            output_df[("trend", df.columns[i])] = result.trend
+            output_df[("seasonal_7", df.columns[i])] = result.seasonal["seasonal_7"]
+            output_df[("seasonal_365", df.columns[i])] = result.seasonal["seasonal_365"]
 
         return output_df
 

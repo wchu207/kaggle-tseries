@@ -11,7 +11,7 @@ class VARMAXWrapper(RegressorMixin, BaseEstimator):
     def set_params(self):
         pass
 
-    def fit(self, X, exog=None):
+    def fit(self, X, exog):
         # Accepts sales and promotion data as Numpy arrays
         # Each row represents a date
         # Should use STL decomposition to reduce to stationarity
